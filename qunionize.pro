@@ -18,6 +18,8 @@ RESOURCES += qml.qrc
 TRANSLATIONS += \
     qunionize_de_DE.ts
 
+LIBS += -lqgpgme -lgpgmepp
+
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
 

@@ -6,6 +6,23 @@
 #include <QTimer>
 #include <QtDebug>
 
+#include <QGpgME/ChangeOwnerTrustJob>
+#include <QGpgME/CryptoConfig>
+#include <QGpgME/DecryptJob>
+#include <QGpgME/ExportJob>
+#include <QGpgME/ImportFromKeyserverJob>
+#include <QGpgME/KeyGenerationJob>
+#include <QGpgME/KeyListJob>
+#include <QGpgME/ListAllKeysJob>
+#include <QGpgME/SignJob>
+#include <QGpgME/SignKeyJob>
+
+#include <QGpgME/EncryptJob>
+#include <QGpgME/Protocol>
+
+#include <gpgme++/keygenerationresult.h>
+#include <gpgme++/keylistresult.h>
+
 App::App(QObject *parent)
     : QObject(parent)
 {
@@ -24,6 +41,22 @@ void App::startRegistration(const QString &name, const QString &address)
     m_initAccountData.company = name;
     m_initFSM.start();
     emit registrationStarted();
+}
+
+void App::initCrypto()
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    auto *job = QGpgME::openpgp()->listAllKeysJob(false, false);
+    // std::vector< GpgME::Key > keys;
+    connect(job, &QGpgME::ListAllKeysJob::result, this,
+            [](const GpgME::KeyListResult &result, const std::vector< GpgME::Key > &pub = std::vector< GpgME::Key >(),
+               const std::vector< GpgME::Key > &sec = std::vector< GpgME::Key >(), const QString &auditLogAsHtml = QString(),
+               const GpgME::Error &auditLogError = GpgME::Error()) noexcept {
+                for (const auto &key : pub) {
+                    qInfo() << "key:" << key.keyID() << key.primaryFingerprint();
+                }
+            });
+    job->start(false);
 }
 
 namespace
@@ -87,7 +120,41 @@ void App::setupInitFSM()
     });
     onEnter(generating, [this]() noexcept {
         // generate keys
-        QTimer::singleShot(2000, this, &App::keysCreated);
+        auto *job = QGpgME::openpgp()->keyGenerationJob();
+        connect(job, &QGpgME::KeyGenerationJob::result, this,
+                [this](const GpgME::KeyGenerationResult &result, const QByteArray &pubKeyData,
+                       const QString &auditLogAsHtml = QString(),
+                       const GpgME::Error &auditLogError = GpgME::Error()) noexcept {
+                    qInfo() << "error:" << result.error().asString() << "pubKeyData" << pubKeyData
+                            << "isPrimaryKeyGenerated=" << result.isPrimaryKeyGenerated()
+                            << "fingerprint=" << result.fingerprint();
+                    m_userData.fingerPrint = result.fingerprint();
+                    m_userData.publicKey = pubKeyData;
+                    auto *job = QGpgME::openpgp()->publicKeyExportJob(false);
+                    connect(job, &QGpgME::ExportJob::result, this,
+                            [this](const GpgME::Error &result, const QByteArray &keyData,
+                                   const QString &auditLogAsHtml = QString(),
+                                   const GpgME::Error &auditLogError = GpgME::Error()) noexcept {
+                        qInfo() << "error=" << result.asString();
+                        qInfo() << "pubKey:" << keyData;
+                        m_initAccountData.publicKey = keyData;
+                        m_userData.publicKey = keyData;
+                    });
+                    job->start(QStringList() << QString::fromUtf8(m_userData.fingerPrint));
+                    emit keysCreated();
+                });
+        const char *parameters = "<GnupgKeyParms format=\"internal\">\n"
+                                 "Key-Type: DSA\n"
+                                 "Key-Length: 1024\n"
+                                 "Subkey-Type: ELG-E\n"
+                                 "Subkey-Length: 1024\n"
+                                 "Name-Real: Joe Tester\n"
+                                 "Name-Comment: (pp=abc)\n"
+                                 "Name-Email: joe@foo.bar\n"
+                                 "Passphrase: abc\n"
+                                 "Expire-Date: 0\n"
+                                 "</GnupgKeyParms>\n";
+        job->start(parameters);
     });
     onEnter(registering, [this]() noexcept {
         // register keys
