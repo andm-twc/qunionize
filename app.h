@@ -14,6 +14,7 @@ class App : public QObject
     Q_PROPERTY(bool registering READ registering NOTIFY registeringChanged)
     Q_PROPERTY(QString appState READ appState NOTIFY appStateChanged)
     Q_PROPERTY(bool registered READ registered NOTIFY registeredChanged)
+    Q_PROPERTY(QString uuid READ uuidText NOTIFY uuidChanged)
     //    Q_PROPERTY(QString initState READ initState NOTIFY initStateChanged)
 public:
     explicit App(QObject *parent = nullptr);
@@ -57,6 +58,11 @@ public:
         emit setupPageRequested();
     }
 
+    QString uuidText() const
+    {
+        return m_userData.uuid.toString();
+    }
+
 private:
     void setupFSM();
     QState *addState(const char *name);
@@ -97,6 +103,8 @@ signals:
 
     void serverError();
     void cryptoError();
+
+    void uuidChanged();
 
 private:
     int m_total = 0;

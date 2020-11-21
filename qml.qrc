@@ -5,5 +5,6 @@
         <file>AccountPage.qml</file>
         <file>StatsPage.qml</file>
         <file>qtquickcontrols2.conf</file>
+        <file>GetCheckedPage.qml</file>
     </qresource>
 </RCC>

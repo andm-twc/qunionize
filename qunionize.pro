@@ -1,6 +1,9 @@
-QT += quick
+QT += quick multimedia
 
 CONFIG += c++14
+
+CONFIG += qzxing_qml qzxing_multimedia
+include(qzxing/src/QZXing.pri)
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.

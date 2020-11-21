@@ -56,6 +56,14 @@ ApplicationWindow {
                     drawer.close()
                 }
             }
+            ItemDelegate {
+                text: qsTr("Get Checked")
+                width: parent.width
+                onClicked: {
+                    stackView.push("GetCheckedPage.qml")
+                    drawer.close()
+                }
+            }
         }
     }
 
