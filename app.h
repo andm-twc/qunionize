@@ -49,8 +49,10 @@ public:
     }
 
     Q_INVOKABLE void startRegistration(const QString &name, const QString &address);
+    void initCrypto();
     Q_INVOKABLE void start()
     {
+        initCrypto();
         m_fsm.start();
     }
     Q_INVOKABLE void requestSetupPage()

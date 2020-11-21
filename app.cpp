@@ -6,6 +6,20 @@
 #include <QTimer>
 #include <QtDebug>
 
+#include <QGpgME/ChangeOwnerTrustJob>
+#include <QGpgME/CryptoConfig>
+#include <QGpgME/DecryptJob>
+#include <QGpgME/ImportFromKeyserverJob>
+#include <QGpgME/KeyListJob>
+#include <QGpgME/ListAllKeysJob>
+#include <QGpgME/SignJob>
+#include <QGpgME/SignKeyJob>
+
+#include <QGpgME/EncryptJob>
+#include <QGpgME/Protocol>
+
+#include <gpgme++/keylistresult.h>
+
 App::App(QObject *parent)
     : QObject(parent)
 {
@@ -24,6 +38,22 @@ void App::startRegistration(const QString &name, const QString &address)
     m_initAccountData.company = name;
     m_initFSM.start();
     emit registrationStarted();
+}
+
+void App::initCrypto()
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    auto *job = QGpgME::openpgp()->listAllKeysJob(false, false);
+    // std::vector< GpgME::Key > keys;
+    connect(job, &QGpgME::ListAllKeysJob::result, this,
+            [](const GpgME::KeyListResult &result, const std::vector< GpgME::Key > &pub = std::vector< GpgME::Key >(),
+               const std::vector< GpgME::Key > &sec = std::vector< GpgME::Key >(), const QString &auditLogAsHtml = QString(),
+               const GpgME::Error &auditLogError = GpgME::Error()) noexcept {
+                for (const auto &key : pub) {
+                    qInfo() << "key:" << key.keyID() << key.primaryFingerprint();
+                }
+            });
+    job->start(false);
 }
 
 namespace
