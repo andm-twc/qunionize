@@ -47,7 +47,6 @@ void App::initCrypto()
 {
     qDebug() << __PRETTY_FUNCTION__;
     auto *job = QGpgME::openpgp()->listAllKeysJob(false, false);
-    // std::vector< GpgME::Key > keys;
     connect(job, &QGpgME::ListAllKeysJob::result, this,
             [](const GpgME::KeyListResult &result, const std::vector< GpgME::Key > &pub = std::vector< GpgME::Key >(),
                const std::vector< GpgME::Key > &sec = std::vector< GpgME::Key >(), const QString &auditLogAsHtml = QString(),
@@ -135,11 +134,11 @@ void App::setupInitFSM()
                             [this](const GpgME::Error &result, const QByteArray &keyData,
                                    const QString &auditLogAsHtml = QString(),
                                    const GpgME::Error &auditLogError = GpgME::Error()) noexcept {
-                        qInfo() << "error=" << result.asString();
-                        qInfo() << "pubKey:" << keyData;
-                        m_initAccountData.publicKey = keyData;
-                        m_userData.publicKey = keyData;
-                    });
+                                qInfo() << "error=" << result.asString();
+                                qInfo() << "pubKey:" << keyData;
+                                m_initAccountData.publicKey = keyData;
+                                m_userData.publicKey = keyData;
+                            });
                     job->start(QStringList() << QString::fromUtf8(m_userData.fingerPrint));
                     emit keysCreated();
                 });

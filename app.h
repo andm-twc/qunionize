@@ -15,7 +15,6 @@ class App : public QObject
     Q_PROPERTY(QString appState READ appState NOTIFY appStateChanged)
     Q_PROPERTY(bool registered READ registered NOTIFY registeredChanged)
     Q_PROPERTY(QString uuid READ uuidText NOTIFY uuidChanged)
-    //    Q_PROPERTY(QString initState READ initState NOTIFY initStateChanged)
 public:
     explicit App(QObject *parent = nullptr);
 
