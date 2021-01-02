@@ -1,0 +1,16 @@
+@startuml
+title Registration on first use
+actor User
+User -> Application : start
+Application -> User : Please register
+User -> Application : (Company Name, Company Address)
+Application -> Server : /createUser
+Server -> Application : UUID
+note right
+UUID is unique
+end note
+Application -> Application : Generate (PublicKey, PrivateKey)
+Application -> Application : Store (UUID, PublicKey, PrivateKey)
+Application -> Server : POST /registerUser/UUID (Public Key, Company Name, Address)
+@enduml
+

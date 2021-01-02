@@ -1,0 +1,30 @@
+@startuml
+title Level1 Verification
+actor User 
+actor Signer
+User -> Signer: provide ID, labour contract, etc.
+note right
+Signer must be Union Official
+end note
+Signer -> Signer : perform background checks, vetting
+Signer -> User : Ask to open app in Identification Mode
+User -> UserApp : open identification flow
+UserApp -> User : show UUID as QR Code
+Signer -> SignerApp : scan QR Code
+SignerApp -> Server : /getUser/UUID
+Server -> SignerApp : (UUID, Public Key, CompanyName, CompanyAddress)
+Signer -> Signer : check that details match
+Signer -> SignerApp : confirm details
+SignerApp -> SignerApp : generate RandomSequence
+SignerApp -> SignerApp : encrypt RandomSequence on User's Public Key
+SignerApp -> Signer : show EncPub(RandomSequence) as QR-Code
+User -> UserApp : scan QR Code
+UserApp -> UserApp : decrypt: DecPriv(EncPub(RandomSequence))
+UserApp -> User : show as QR Code (RandomSequence')
+Signer -> SignerApp : scan QR Code
+SignerApp -> SignerApp : compare generated and received RandomSequences
+SignerApp -> SignerApp : sign users Public Key
+SignerApp -> Server : /registerSignature/UUID {Sig(PublicKey)}
+Server -> Server : store (UUID, Sig) in the database
+@enduml
+

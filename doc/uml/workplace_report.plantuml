@@ -1,0 +1,15 @@
+@startuml
+title Getting Workplace Report
+actor User
+User -> UserApp: start App
+User -> UserApp : open in search mode
+UserApp -> Server : do auth
+Server -> UserApp : give Auth token
+UserApp -> Server : /getStats
+Server -> DB : lookup for UUID's by users (CompanyName, CompanyAddress)
+Server -> DB : lookup for Signatures for each found UUID
+DB -> Server : [(UUID, {Signature})]
+Server -> UserApp : (Number id registered colleagues, L1 count, L2 count)
+UserApp -> User : show stats with links to possible legal options
+@enduml
+
